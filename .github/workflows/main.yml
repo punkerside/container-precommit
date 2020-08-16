@@ -17,28 +17,28 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2   
 
-    # - name: Build and push image
-    #   uses: docker/build-push-action@v1
-    #   with:
-    #     username: ${{ secrets.DOCKER_USERNAME }}
-    #     password: ${{ secrets.DOCKER_PASSWORD }}
-    #     repository: punkerside/container-precommit
-    #     tag_with_ref: true
+    - name: Build and push image
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: punkerside/container-precommit
+        tag_with_ref: true
 
-    # - name: release
-    #   if: github.ref == 'refs/heads/develop'
-    #   env:
-    #     GIT_USER: ${{ secrets.GIT_USER }}
-    #     GIT_PASS: ${{ secrets.GIT_PASS }}
-    #   run: |
-    #     NUM=$(curl -u ${GIT_USER}:${GIT_PASS} -H "Content-Type:application/json" -X POST https://api.github.com/repos/punkerside/container-precommit/pulls -d '{"title": "release", "head": "develop", "base": "release"}' | jq .number)
-    #     curl -u ${GIT_USER}:${GIT_PASS} -H "Accept: application/vnd.github.v3+json" -X PUT https://api.github.com/repos/punkerside/container-precommit/pulls/${NUM}/merge -d '{"commit_title":"release", "merge_method": "merge"}'
+    - name: release
+      if: github.ref == 'refs/heads/develop'
+      env:
+        GIT_USER: ${{ secrets.GIT_USER }}
+        GIT_PASS: ${{ secrets.GIT_PASS }}
+      run: |
+        NUM=$(curl -u ${GIT_USER}:${GIT_PASS} -H "Content-Type:application/json" -X POST https://api.github.com/repos/punkerside/container-precommit/pulls -d '{"title": "release", "head": "develop", "base": "release"}' | jq .number)
+        curl -u ${GIT_USER}:${GIT_PASS} -H "Accept: application/vnd.github.v3+json" -X PUT https://api.github.com/repos/punkerside/container-precommit/pulls/${NUM}/merge -d '{"commit_title":"release", "merge_method": "merge"}'
 
-    # - name: publish
-    #   if: github.ref == 'refs/heads/release'
-    #   env:
-    #     GIT_USER: ${{ secrets.GIT_USER }}
-    #     GIT_PASS: ${{ secrets.GIT_PASS }}
-    #   run: |
-    #     NUM=$(curl -u ${GIT_USER}:${GIT_PASS} -H "Content-Type:application/json" -X POST https://api.github.com/repos/punkerside/container-precommit/pulls -d '{"title": "publish", "head": "release", "base": "master"}' | jq .number)
-    #     curl -u ${GIT_USER}:${GIT_PASS} -H "Accept: application/vnd.github.v3+json" -X PUT https://api.github.com/repos/punkerside/container-precommit/pulls/${NUM}/merge -d '{"commit_title" : "publish", "merge_method": "merge"}'
+    - name: publish
+      if: github.ref == 'refs/heads/release'
+      env:
+        GIT_USER: ${{ secrets.GIT_USER }}
+        GIT_PASS: ${{ secrets.GIT_PASS }}
+      run: |
+        NUM=$(curl -u ${GIT_USER}:${GIT_PASS} -H "Content-Type:application/json" -X POST https://api.github.com/repos/punkerside/container-precommit/pulls -d '{"title": "publish", "head": "release", "base": "master"}' | jq .number)
+        curl -u ${GIT_USER}:${GIT_PASS} -H "Accept: application/vnd.github.v3+json" -X PUT https://api.github.com/repos/punkerside/container-precommit/pulls/${NUM}/merge -d '{"commit_title" : "publish", "merge_method": "merge"}'
