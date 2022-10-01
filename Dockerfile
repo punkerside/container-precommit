@@ -1,23 +1,28 @@
-FROM ubuntu:18.04
+FROM alpine:3.16.2
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install -y \
-  make \
-  g++ \
-  gcc \
+RUN apk update && apk upgrade && apk add --no-cache \
   curl \
-  unzip \
+  git \
   python3 \
   python3-dev \
-  python3-pip \
-  git
+  py3-pip \
+  g++ \
+  gcc \
+  make \
+  bash \
+  perl
 
-RUN pip3 install pre-commit
+RUN curl -s https://releases.hashicorp.com/terraform/1.2.5/terraform_1.2.5_linux_amd64.zip -o /tmp/terraform_1.2.5_linux_amd64.zip && \
+  unzip /tmp/terraform_1.2.5_linux_amd64.zip -d /tmp/ && \
+  chmod +x /tmp/terraform && mv /tmp/terraform /usr/bin/ && \
+  rm -rf /tmp/terraform_1.2.5_linux_amd64.zip
 
-RUN curl https://releases.hashicorp.com/terraform/0.12.29/terraform_0.12.29_linux_amd64.zip -o terraform_0.12.29_linux_amd64.zip
-RUN unzip terraform_0.12.29_linux_amd64.zip && chmod +x terraform && mv terraform /usr/bin/
-RUN curl -L "$(curl -s https://api.github.com/repositories/60978152/releases/latest | grep -o -E "https://.+?-linux-amd64")" > terraform-docs && chmod +x terraform-docs && mv terraform-docs /usr/bin/
+RUN curl -s -Lo ./terraform-docs.tar.gz "https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-$(uname)-amd64.tar.gz" && \
+  tar -xzf terraform-docs.tar.gz && \
+  chmod +x terraform-docs && \
+  mv terraform-docs /usr/bin/terraform-docs
+
+RUN pip install --no-cache-dir pre-commit==2.20.0
 
 WORKDIR /app
-CMD ["pre-commit", "run", "-a"]
+CMD [ "pre-commit", "run", "-a" ]
