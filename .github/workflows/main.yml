@@ -33,9 +33,3 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: punkerside/container-precommit
         tag_with_ref: true
-
-    - name: Tagging
-      if: github.ref == 'refs/heads/master'
-      uses: butlerlogic/action-autotag@stable
-      with:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
