@@ -1,35 +1,35 @@
-name: Build and push
+name: Pipeline
 
 on:
   push:
     branches:
-      - master
-      - develop
+      - main
+
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+  GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
 jobs:
-  build:
-    name: build
+  Pipeline:
+    name: Default
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 40
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v2   
+      uses: actions/checkout@v3
 
-    - name: release
-      if: github.ref == 'refs/heads/develop'
-      env:
-        GIT_USER: ${{ secrets.GIT_USER }}
-        GIT_PASS: ${{ secrets.GIT_PASS }}
-      run: |
-        NUM=$(curl -u ${GIT_USER}:${GIT_PASS} -H "Content-Type:application/json" -X POST https://api.github.com/repos/punkerside/container-precommit/pulls -d '{"title": "release", "head": "develop", "base": "master"}' | jq .number)
-        curl -u ${GIT_USER}:${GIT_PASS} -H "Accept: application/vnd.github.v3+json" -X PUT https://api.github.com/repos/punkerside/container-precommit/pulls/${NUM}/merge -d '{"commit_title":"release", "merge_method": "merge"}'
-
-    - name: Build and push image
-      if: github.ref == 'refs/heads/master'
-      uses: docker/build-push-action@v1
+    - name: Reusing Workflows
+      uses: actions/checkout@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: punkerside/container-precommit
-        tag_with_ref: true
+        repository: punkerside/titan-bash
+        ref: main
+        path: .titan-bash/
+
+    - name: Build
+      uses: ./.titan-bash/pipelines/image/github
+      with:
+        DOCKERHUB_USER: ${DOCKERHUB_USER}
+        DOCKERHUB_PASS: ${DOCKERHUB_PASS}
+        GIT_TOKEN: ${GIT_TOKEN}
